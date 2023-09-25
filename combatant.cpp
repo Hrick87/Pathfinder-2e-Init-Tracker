@@ -1,59 +1,49 @@
-#include "combative.h"
+#include "combatant.h"
 
-Combative::Combative()
+Combatant::Combatant()
 {
-    string name;
-    int initiative;
-    int hp;
-    int ac;
+    std::cout << "Name: ";
+    std::cin >> this->name;
 
-    cout << "Name: ";
-    cin >> name;
+    std::cout << "HP: ";
+    this->hp = validateIntEntry();
 
-    cout << "Initiative: ";
-    cin >> initiative;
-
-    cout << "HP: ";
-    cin >> hp;
-
-    cout << "AC: ";
-    cin >> ac;
-    cout << endl;
-
-    this->name = name;
-    this->initiative = initiative;
-    this->hp = hp;
-    this->ac = ac;
+    std::cout << "AC: ";
+    this->ac = validateIntEntry();
+    std::cout << std::endl;
 }
 
-string Combative::getName()
+Combatant::Combatant(std::string name, int hp, int ac, std::map<std::string, int> skillMods)
+{
+    this->name = name;
+    this->hp = hp;
+    this->ac = ac;
+    this->skillMods = skillMods;
+}
+
+std::string Combatant::getName()
 {
     return name;
 }
 
-int Combative::getInit()
-{
-    return initiative;
-}
-
-int Combative::getHp()
+int Combatant::getHp()
 {
     return hp;
 }
 
-int Combative::getAc()
+int Combatant::getAc()
 {
     return ac;
 }
 
-map<string, int> Combative::getCondition()
+std::map<std::string, int> Combatant::getCondition()
 {
     return condition;
 }
 
-void Combative::updateConditions(bool startOfTurn)
+void Combatant::updateConditions(bool startOfTurn)
 {
-    for (map<string, int>::iterator itr = condition.begin(); itr != condition.end(); ++itr)
+    for (std::map<std::string, int>::iterator itr = condition.begin(); itr != condition.end(); ++itr)
     {
         if ((itr->second > 0 && itr->first == "Frightened" && startOfTurn == false) || (itr->second > 0 && itr->first == "Stunned" && startOfTurn == true))
         {
@@ -72,7 +62,7 @@ void Combative::updateConditions(bool startOfTurn)
     }
 }
 
-void Combative::setCondition()
+void Combatant::setCondition()
 {
 
     int addCond = 0;
@@ -81,22 +71,22 @@ void Combative::setCondition()
 
     while (moreCons == 'c')
     {
-        cout << "Type the number of the condition to add." << endl;
-        cin >> addCond;
+        std::cout << "Type the number of the condition to add." << std::endl;
+        std::cin >> addCond;
 
         switch (addCond)
         {
         case 1:
         {
-            cout << "Set value of condition." << endl;
-            cin >> condVal;
+            std::cout << "Set value of condition." << std::endl;
+            std::cin >> condVal;
             condition.insert({"Doomed", condVal});
             break;
         }
         case 2:
         {
-            cout << "Set value of condition." << endl;
-            cin >> condVal;
+            std::cout << "Set value of condition." << std::endl;
+            std::cin >> condVal;
             condition.insert({"Dying", condVal});
             break;
         }
@@ -107,8 +97,8 @@ void Combative::setCondition()
         }
         case 4:
         {
-            cout << "Set value of condition." << endl;
-            cin >> condVal;
+            std::cout << "Set value of condition." << std::endl;
+            std::cin >> condVal;
             condition.insert({"Wounded", condVal});
             break;
         }
@@ -134,29 +124,29 @@ void Combative::setCondition()
         }
         case 9:
         {
-            cout << "Set value of condition." << endl;
-            cin >> condVal;
+            std::cout << "Set value of condition." << std::endl;
+            std::cin >> condVal;
             condition.insert({"Clumsy", condVal});
             break;
         }
         case 10:
         {
-            cout << "Set value of condition." << endl;
-            cin >> condVal;
+            std::cout << "Set value of condition." << std::endl;
+            std::cin >> condVal;
             condition.insert({"Drained", condVal});
             break;
         }
         case 11:
         {
-            cout << "Set value of condition." << endl;
-            cin >> condVal;
+            std::cout << "Set value of condition." << std::endl;
+            std::cin >> condVal;
             condition.insert({"Enfeebled", condVal});
             break;
         }
         case 12:
         {
-            cout << "Set value of condition." << endl;
-            cin >> condVal;
+            std::cout << "Set value of condition." << std::endl;
+            std::cin >> condVal;
             condition.insert({"Stupified", condVal});
             break;
         }
@@ -209,8 +199,8 @@ void Combative::setCondition()
         }
         case 22:
         {
-            cout << "Set value of condition." << endl;
-            cin >> condVal;
+            std::cout << "Set value of condition." << std::endl;
+            std::cin >> condVal;
             condition.insert({"Fatigued", condVal});
             break;
         }
@@ -226,8 +216,8 @@ void Combative::setCondition()
         }
         case 25:
         {
-            cout << "Set value of condition." << endl;
-            cin >> condVal;
+            std::cout << "Set value of condition." << std::endl;
+            std::cin >> condVal;
             condition.insert({"Frightened", condVal});
             break;
         }
@@ -268,22 +258,22 @@ void Combative::setCondition()
         }
         case 33:
         {
-            cout << "Set value of condition." << endl;
-            cin >> condVal;
+            std::cout << "Set value of condition." << std::endl;
+            std::cin >> condVal;
             condition.insert({"Sickened", condVal});
             break;
         }
         case 34:
         {
-            cout << "Set value of condition." << endl;
-            cin >> condVal;
+            std::cout << "Set value of condition." << std::endl;
+            std::cin >> condVal;
             condition.insert({"Slowed", condVal});
             break;
         }
         case 35:
         {
-            cout << "Set value of condition." << endl;
-            cin >> condVal;
+            std::cout << "Set value of condition." << std::endl;
+            std::cin >> condVal;
             condition.insert({"Stunned", condVal});
             break;
         }
@@ -314,40 +304,40 @@ void Combative::setCondition()
         }
         default:
         {
-            cout << "Please pick a valid number";
+            std::cout << "Please pick a valid number";
             break;
         }
         }
 
-        cout << "Type c to add more conditions. Any other button to exit." << endl;
-        cin >> moreCons;
+        std::cout << "Type c to add more conditions. Any other button to exit." << std::endl;
+        std::cin >> moreCons;
     }
 }
 
-void Combative::printCombatantInfo()
+void Combatant::printCombatantInfo()
 {
 
-    cout << "Conditions: ";
+    std::cout << "Name: " << name << std::endl;
+    std::cout << "HP: " << hp << std::endl;
+    std::cout << "AC: " << ac << std::endl
+              << std::endl;
+
+    std::cout << "Conditions: ";
     if (condition.size() > 0)
     {
-        for (map<string, int>::iterator itr = condition.begin(); itr != condition.end(); ++itr)
+        for (std::map<std::string, int>::iterator itr = condition.begin(); itr != condition.end(); ++itr)
         {
-            cout << itr->first << " ";
+            std::cout << itr->first << " ";
 
             if (itr->second > 0)
             {
-                cout << itr->second << " ";
+                std::cout << itr->second << " ";
             }
         }
     }
-    cout << endl;
-    cout << "Name: " << name << endl;
-    cout << "Initiative: " << initiative << endl;
-    cout << "HP: " << hp << endl;
-    cout << "AC: " << ac << endl
-         << endl;
+    std::cout << std::endl;
 }
 
-Combative::~Combative()
+Combatant::~Combatant()
 {
 }
