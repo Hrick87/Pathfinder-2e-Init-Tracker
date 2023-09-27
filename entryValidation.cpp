@@ -32,7 +32,7 @@ int validateIntEntry()
 std::string validateCombatantSelection()
 {
 
-    std::string combatantSelections;
+    std::string combatantSelections = "";
     bool breakOut = false;
     std::smatch m;
     std::regex p("(?:[0-9]+\\s[0-9]+\\s?)+"); // matches even number of digits spaced apart
@@ -40,7 +40,7 @@ std::string validateCombatantSelection()
     while (std::getline(std::cin, combatantSelections))
     {
         // std::cout << "inside combatantSelections: " << combatantSelections << std::endl;
-        if (regex_match(combatantSelections, m, p))
+        if (regex_match(combatantSelections, m, p) || combatantSelections == "")
         {
             breakOut = true;
         }

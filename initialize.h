@@ -9,6 +9,7 @@
 #include <fstream>
 #include <experimental/filesystem>
 #include "combatant.h"
+#include <exception>
 
 namespace fs = std::experimental::filesystem;
 

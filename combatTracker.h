@@ -16,20 +16,24 @@ private:
     short int numCombatants;
     std::vector<Combatant> playerVec;
     std::vector<Combatant> enemyVec;
+    std::map<std::string, std::vector<std::pair<std::string, int>>> conditions;
     std::multimap<int, Combatant, std::greater<int>> combatants;
+
     void manualInitiative();
     void autoInitiative();
     void initStrParser(std::string combatantSelections);
     void roll(std::vector<Combatant> aVec);
+    void initConditionMap();
+    void setCondition();
 
 public:
     combatTracker(std::vector<Combatant>, std::vector<Combatant>);
     void handleInitiative();
-    // void setConditionTracker(multimap<int, Combatant> &combatants);
+
     // void setPersistentTracker(multimap<int, Combatant> &combatants);
-    // void printConditions();
+    void printConditions();
     //  void printPDamage();
-    void printInitOrder(std::multimap<int, Combatant, std::greater<int>>::iterator currentTurn);
+    void printInitOrder(std::multimap<int, Combatant, std::greater<int>>::iterator currentTurn, std::multimap<int, Combatant, std::greater<int>> mapToPrint);
     void beginInitiative(std::multimap<int, Combatant, std::greater<int>> combantants);
 
     ~combatTracker();

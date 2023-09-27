@@ -14,8 +14,7 @@ private:
     std::string name;
     int hp;
     int ac;
-    std::map<std::string, int> skillMods;
-    std::map<std::string, int> condition; // TRACKS CONDITION AND VALUE
+    std::map<std::string, int> skillMods; // Assigns each skill a modifier as the value
 
 public:
     Combatant();                                                                       // For manual entry of player data
@@ -25,10 +24,7 @@ public:
     int getHp();
     int getAc();
     void updateConditions(bool startOfTurn);
-    std::map<std::string, int> getCondition();
     std::map<std::string, int> getSkillMods() { return skillMods; };
-
-    void setCondition();
 
     ~Combatant();
 };

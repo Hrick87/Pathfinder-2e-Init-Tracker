@@ -2,6 +2,16 @@
 
 #include "combatTracker.h"
 
+const std::string conditionArr[42] = {
+    "Doomed", "Dying", "Unconscious", "Wounded",
+    "Hidden", "Observed", "Undetected", "Unnoticed",
+    "Clumsy", "Drained", "Enfeebled", "Stupefied",
+    "Blinded", "Concealed", "Dazzled", "Deafened", "Invisible",
+    "Confused", "Controlled", "Encumbered", "Fascinated", "Fatigued",
+    "Flatfooted", "Fleeing", "Frightened", "Grabbed", "Immobilized", "Paralyzed",
+    "Petrified", "Prone", "Quickened", "Restrained", "Sickened", "Slowed",
+    "Stunned", "Friendly", "Helpful", "Hostile", "Indifferent", "Unfriendly"};
+
 combatTracker::combatTracker(std::vector<Combatant> playerVec, std::vector<Combatant> enemyVec)
 {
     this->playerVec = playerVec;
@@ -54,18 +64,25 @@ void combatTracker::roll(std::vector<Combatant> aVec)
             int ogRoll = roll;
             roll += mod;
 
-            std::cout << "Type any extra bonuses to add to " << aVec[x].getName() << "'s roll: ";
-            int extraMod = INT8_MIN;
-            std::cin >> extraMod;
+            std::cout << "Type the total of any other modifiers to add to " << aVec[x].getName() << "'s roll: ";
+            std::string extraModStr = "0";
+            std::getline(std::cin, extraModStr);
 
-            if (extraMod != INT8_MIN)
+            if (extraModStr == "")
+            {
+                extraModStr = "0";
+            }
+
+            int extraMod = stoi(extraModStr);
+
+            if (extraMod != 0)
             {
                 roll += extraMod;
             }
 
             std::cout << "Rolled a " << roll << " ( Dice roll: " << ogRoll << " + "
                       << "perception modifier: " << mod;
-            (extraMod != INT8_MIN) ? std::cout << " + other bonuses: " << extraMod << " )" << std::endl : std::cout << " )" << std::endl;
+            (extraMod != 0) ? std::cout << " + other bonuses: " << extraMod << " )" << std::endl : std::cout << " )" << std::endl;
             std::cout << std::endl;
             combatants.insert(std::pair<int, Combatant>(roll, aVec[x]));
         }
@@ -80,7 +97,7 @@ void combatTracker::autoInitiative()
 
     // TO DO: IMPLEMENT FULL AUTO INITIATIVE AND STRING PARSING OF USER INPUT
     std::cout << std::endl
-              << "Type the corresponding number of any combatant not using Perception for their initiative, \nthen type the number of the respective skill in the following format:\n\"3\"(combatant number) \"4\"(skill number) \"1\"(combatant number) \"1\"(skill number) so that it looks like:\n3 4 1 1\n";
+              << "Type the corresponding number of any combatant not using Perception for their initiative, \nthen type the number of the respective skill in the following format:\n\"3\"(combatant number) \"4\"(skill number) \"1\"(combatant number) \"1\"(skill number) so that it looks like:\n3 4 1 1\nor type nothing and hit enter to roll perception only\n";
 
     unsigned long int i = 0;
 
@@ -117,7 +134,10 @@ void combatTracker::autoInitiative()
 
     std::string combatantSelections = validateCombatantSelection();
 
-    initStrParser(combatantSelections);
+    if (combatantSelections != "")
+    {
+        initStrParser(combatantSelections);
+    }
 
     roll(playerVec);
     roll(enemyVec);
@@ -158,10 +178,6 @@ void combatTracker::initStrParser(std::string combatantSelections)
         if (combatantIndex[x] < playerVec.size())
         {
             skillMods = playerVec[combatantIndex[x]].getSkillMods();
-            for (auto iter = skillMods.begin(); iter != skillMods.end(); iter++)
-            {
-                std::cout << iter->first << std::endl;
-            }
         }
         else if (combatantIndex[x] < playerVec.size() + enemyVec.size())
         {
@@ -187,40 +203,50 @@ void combatTracker::initStrParser(std::string combatantSelections)
 
             if (combatantIndex[x] < playerVec.size())
             {
-                std::cout << "Type any extra bonuses to add to " << playerVec[combatantIndex[x]].getName() << "'s roll: ";
+                std::cout << "Type the total of any other modifiers to add to " << playerVec[combatantIndex[x]].getName() << "'s roll: ";
 
-                int extraMod = INT8_MIN;
+                std::string extraModStr = "0";
 
-                std::cin >> extraMod;
-
+                std::getline(std::cin, extraModStr);
+                if (extraModStr == "")
+                {
+                    extraModStr = "0";
+                }
+                int extraMod = stoi(extraModStr);
                 int ogRoll = roll;
                 roll += mod;
 
-                if (extraMod != INT8_MIN)
+                if (extraMod != 0)
                 {
                     roll += extraMod;
                 }
 
                 std::cout << "Rolled a " << roll << " ( Dice roll: " << ogRoll << " + " << iter->first << " modifier: " << mod;
-                (extraMod != INT8_MIN) ? std::cout << " + other modifiers: " << extraMod << " )" << std::endl : std::cout << " )" << std::endl;
+                (extraMod != 0) ? std::cout << " + other modifiers: " << extraMod << " )" << std::endl : std::cout << " )" << std::endl;
                 std::cout << std::endl;
                 combatants.insert(std::pair<int, Combatant>(roll, playerVec[combatantIndex[x]]));
             }
             else
             {
-                std::cout << "Type any extra bonuses to add to " << enemyVec[combatantIndex[x] - playerVec.size()].getName() << "'s roll: ";
-                int extraMod = INT8_MIN;
+                std::cout << "Type the total of any other modifiers to add to " << enemyVec[combatantIndex[x] - playerVec.size()].getName() << "'s roll: ";
+
+                std::string extraModStr = "0";
+                std::getline(std::cin, extraModStr);
+                if (extraModStr == "")
+                {
+                    extraModStr = "0";
+                }
+                int extraMod = stoi(extraModStr);
                 int ogRoll = roll;
-                std::cin >> extraMod;
                 roll += mod;
 
-                if (extraMod != INT8_MIN)
+                if (extraMod != 0)
                 {
                     roll += extraMod;
                 }
 
                 std::cout << "Rolled a " << roll << " ( Dice roll: " << ogRoll << " + " << iter->first << " modifier: " << mod;
-                (extraMod != INT8_MIN) ? std::cout << " + other modifiers: " << extraMod << " )" << std::endl : std::cout << " )" << std::endl;
+                (extraMod != 0) ? std::cout << " + other modifiers: " << extraMod << " )" << std::endl : std::cout << " )" << std::endl;
                 std::cout << std::endl;
                 combatants.insert(std::pair<int, Combatant>(roll, enemyVec[combatantIndex[x] - playerVec.size()]));
             }
@@ -256,14 +282,14 @@ void combatTracker::handleInitiative()
     }
 }
 
-void combatTracker::printInitOrder(std::multimap<int, Combatant, std::greater<int>>::iterator currentTurn)
+void combatTracker::printInitOrder(std::multimap<int, Combatant, std::greater<int>>::iterator currentTurn, std::multimap<int, Combatant, std::greater<int>> mapToPrint)
 {
     std::cout << "Initiative Order\n\n";
 
     std::string longestName = "";
 
     // find longest name in the initative for setw()
-    for (auto itr = combatants.begin(); itr != combatants.end(); itr++)
+    for (auto itr = mapToPrint.begin(); itr != mapToPrint.end(); itr++)
     {
         std::string tempName = itr->second.getName();
 
@@ -274,7 +300,7 @@ void combatTracker::printInitOrder(std::multimap<int, Combatant, std::greater<in
     }
 
     // Print initiative order
-    for (auto itr = combatants.begin(); itr != combatants.end(); itr++)
+    for (auto itr = mapToPrint.begin(); itr != mapToPrint.end(); itr++)
     {
         std::string conStr = itr->second.getName() + ": " + std::to_string(itr->first);
         std::cout << conStr;
@@ -290,7 +316,6 @@ void combatTracker::printInitOrder(std::multimap<int, Combatant, std::greater<in
     std::cout << std::endl;
 }
 
-/*
 void combatTracker::printConditions()
 {
     std::cout << "Death and Dying:\n1.Doomed\n2.Dying\n3.Unconscious\n4.Wounded\n\n";
@@ -303,7 +328,6 @@ void combatTracker::printConditions()
     std::cout << "35.Stunned\n\n";
     std::cout << "Attitudes:\n36.Friendly\n37.Helpful\n38.Hostile\n39.Indifferent\n40.Unfriendly\n\n";
 }
-*/
 
 /*
 void combatTracker::printPDamage()
@@ -356,41 +380,95 @@ void combatTracker::setPersistentTracker(multimap<int, Combatant> &combatants)
 }
 */
 
-/*
-void combatTracker::setConditionTracker(multimap<int, Combatant> &combatants)
+template <typename First, typename... T>
+bool is_in(First &&first, T &&...t)
 {
-    std::cout << "Select combatant to add condition to.\n\n";
-    int count = 0;
-    int selection = 0;
-    map<int, Combatant> selected;
+    return ((first == t) || ...);
+}
+
+void combatTracker::setCondition()
+{
+    std::cout << "Type numbers of the combatants to add conditions to in the format: 2 1 4.\n\n";
+    int count = 1;
+    std::string selectionStr = "0";
 
     for (std::multimap<int, Combatant, std::greater<int>>::iterator itr = combatants.begin(); itr != combatants.end(); ++itr)
     {
-        std::cout << count << ": " << itr->getName() << endl;
-        selected.insert({count, *itr});
+        std::cout << count << ". " << itr->second.getName() << std::endl;
         count++;
     }
 
-    cin >> selection;
-    Combatant *chosen = &(selected.at(selection));
-    std::cout << "Pick a condition(s) to apply\n\n";
+    std::cin.ignore();
+    std::getline(std::cin, selectionStr);
+    std::istringstream iss(selectionStr);
+    int selection = 0;
+    std::vector<int> combatantNums;
+    while (iss >> selection)
+    {
+        combatantNums.push_back(selection);
+    }
+
+    for (auto i = combatantNums.begin(); i != combatantNums.end(); i++)
+    {
+        std::cout << *i << std::endl;
+    }
 
     printConditions();
 
-    chosen->setCondition();
-    string chosenName = chosen->getName();
+    std::string addCondStr = "0";
 
-    for (std::multimap<int, Combatant, std::greater<int>>::iterator itr = combatants.begin(); itr != combatants.end(); ++itr)
+    bool setValue = false; // checks if user had to set a value which means cin.ignore is necessary for next loop
+
+    for (auto iter = combatantNums.begin(); iter != combatantNums.end(); iter++)
     {
-        if (chosenName == (itr->getName()))
+        auto iter2 = combatants.begin();
+        std::advance(iter2, *iter - 1);
+        std::cout << "Type the numbers of the conditions to add to " << iter2->second.getName() << " in the format: 1 2 7 4" << std::endl;
+
+        if (setValue)
         {
-            std::multimap<int, Combatant, std::greater<int>>::iterator it1 = combatants.erase(itr);
-            combatants.insert(it1, *chosen);
-            break;
+            std::cin.ignore();
+        }
+
+        setValue = false;
+
+        std::getline(std::cin, addCondStr);
+
+        std::istringstream ss(addCondStr);
+        int addCond = 0;
+        int condVal = 0;
+
+        while (ss >> addCond)
+        {
+            if (is_in(addCond, 1, 2, 4, 9, 10, 11, 12, 22, 25, 33, 34, 35))
+            {
+                setValue = true;
+                std::cout << "Set value of condition." << std::endl;
+                condVal = validateIntEntry();
+                // INSERT CONDITION HERE WITH VALUE INPUTTED
+                conditions[iter2->second.getName()].push_back({conditionArr[addCond - 1], condVal});
+            }
+            else if (addCond < 41)
+            {
+                // INSERT CONDITION HERE WITH VALUE 0
+                conditions[iter2->second.getName()].push_back({conditionArr[addCond - 1], -1});
+            }
+            else
+            {
+                std::cout << "Please pick a valid number";
+            }
         }
     }
 }
-*/
+
+void combatTracker::initConditionMap()
+{
+    for (auto iter = combatants.begin(); iter != combatants.end(); iter++)
+    {
+        std::vector<std::pair<std::string, int>> tempVec;
+        conditions.insert({iter->second.getName(), tempVec});
+    }
+}
 
 void combatTracker::beginInitiative(std::multimap<int, Combatant, std::greater<int>> combatants)
 {
@@ -398,12 +476,14 @@ void combatTracker::beginInitiative(std::multimap<int, Combatant, std::greater<i
     char userInput = ' ';
     bool startOfTurn = true;
 
+    initConditionMap(); // fill condition map with names of players in the initative
+
     // ROUNDS
     for (short int z = 1;; z++)
     {
 
         // TURNS
-        for (std::multimap<int, Combatant, std::greater<int>>::iterator itr = combatants.begin(); itr != combatants.end(); ++itr)
+        for (auto itr = combatants.begin(); itr != combatants.end();)
         {
             startOfTurn = true;
             // UPDATE STUNNED AT BEGINNING OF TURN
@@ -413,50 +493,91 @@ void combatTracker::beginInitiative(std::multimap<int, Combatant, std::greater<i
 
             std::cout << "ROUND " << z << "\n\n";
 
-            // CURRENT COMBATANT
-            printInitOrder(itr);
+            // Initiative Order
+            printInitOrder(itr, combatants);
 
+            // CURRENT COMBATANT
             std::cout << "Current Turn\n\n";
             itr->second.printCombatantInfo();
-            std::cout << "n to end turn, c to add a condition to a combatant,\n";
+            std::cout << "Conditions: ";
+            for (int x = 0; x < conditions[itr->second.getName()].size(); x++)
+            {
+                std::cout << conditions[itr->second.getName()][x].first;
+                if (conditions[itr->second.getName()][x].second > -1)
+                {
+                    std::cout << " " << conditions[itr->second.getName()][x].second;
+                    if (x < conditions[itr->second.getName()].size() - 1)
+                    {
+                        std::cout << ", ";
+                    }
+                }
+            }
+            std::cout << std::endl
+                      << std::endl;
+
+            std::cout << "n for next turn, p for previous turn, x to change current combatants initiative (Delay)\n";
+            std::cout << "c to add a condition to a combatant\n";
+
+            /*
             std::cout << "p to add persistent damage,\n";
             std::cout << "r to remove condition or persistent damage,\n";
-            std::cout << "v to change value of condition or persistent damage\n\n";
+            std::cout << "v to change value of condition or persistent damage\n\n";*/
 
             while (1)
             {
                 std::cin >> userInput;
-                if (userInput == 'n')
+                if (tolower(userInput) == 'n')
                 {
+                    itr++;
+                    break;
+                }
+                else if (tolower(userInput) == 'p')
+                {
+                    // in the case current combatant is first in the initiative when p is typed
+                    if (itr == combatants.begin() && z > 1)
+                    {
+                        itr = combatants.end();
+                        itr--;
+                        z--;
+                    }
+                    else if (itr == combatants.begin() && z < 2) //
+                    {
+                        // do nothing
+                    }
+                    else
+                    {
+                        itr--;
+                    }
+
+                    break;
+                }
+                else if (tolower(userInput) == 'x')
+                {
+                    std::cout << itr->second.getName() << "\'s new initiative value: ";
+                    int newInitiative = validateIntEntry();
+                    Combatant tempCombatant = itr->second;
+                    itr = combatants.erase(itr);
+                    combatants.insert(std::pair<int, Combatant>(newInitiative, tempCombatant));
+
                     break;
                 }
                 else if (userInput == 'c')
                 {
-                    // setConditionTracker(combatants);
-                    //  PREVIOUS COMBATANT
-                    for (std::multimap<int, Combatant, std::greater<int>>::iterator itr2 = combatants.begin(); itr2 != itr; ++itr2)
-                    {
-                        itr2->second.printCombatantInfo();
-                    }
-                    // CURRENT COMBATANT
-                    std::cout << "Current Turn\n\n";
-                    itr->second.printCombatantInfo();
-                    std::cout << "n to end turn, c to add a condition to a combatant,\n";
-                    std::cout << "p to add persistent damage,\n";
-                    std::cout << "r to remove condition or persistent damage,\n";
-                    std::cout << "v to change value of condition or persistent damage\n\n";
+                    setCondition();
+                    itr--; // stay on current player, do not go to next in the initative
+                    break;
                 }
-                else if (userInput == 'p')
+                else if (userInput == 'z')
                 {
                     // setPersistentTracker(combatants);
                     //  PREVIOUS COMBATANT
                     for (std::multimap<int, Combatant, std::greater<int>>::iterator itr2 = combatants.begin(); itr2 != itr; ++itr2)
                     {
-                        itr2->second.printCombatantInfo();
+                        // itr2->second.printCombatantInfo();
                     }
                     // CURRENT COMBATANT
                     std::cout << "Current Turn\n\n";
-                    itr->second.printCombatantInfo();
+                    // itr->second.printCombatantInfo();
                     std::cout << "n to end turn, c to add a condition to a combatant,\n";
                     std::cout << "p to add persistent damage,\n";
                     std::cout << "r to remove condition or persistent damage,\n";

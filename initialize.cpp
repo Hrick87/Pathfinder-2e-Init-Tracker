@@ -240,8 +240,14 @@ void initialize::readInPlayerJSON()
             // std::cout << charName << "'s lore is: " << skillMods[17] << std::endl;
 
             Combatant newPlayer(charName, charHp, charAc, skillMods);
-
-            playerVec.push_back(newPlayer);
+            try
+            {
+                playerVec.push_back(newPlayer);
+            }
+            catch (std::exception &e)
+            {
+                std::cerr << e.what() << std::endl;
+            }
         }
     }
 }

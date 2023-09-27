@@ -1,4 +1,4 @@
 initiative tracker
 *.o
-/jsons
-/.vscode
+jsons/
+.vscode/
