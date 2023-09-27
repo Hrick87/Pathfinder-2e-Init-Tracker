@@ -6,6 +6,14 @@ If you would like to undertake a similar project, much of what this system inclu
 
 # How To
 
+## Compilation
+
+A makefile has been included and requires GNU make to be installed on your machine. Type "make" in a command line interface in the root folder of this repository to compile. Compilation and code requires C++17 combatibility and some flavor of linux. Currently not compatible with Windows. Tested and programmed on Ubuntu 20.04.
+
+## Executable
+
+An executable named initiativeTracker has been included pre-compiled for you, but if any issues occur, it is best to try and compile from source. This will most likely lead you to the error preventing the executable from running.
+
 ## JSON Compatibility with Pathbuilder 2e and FoundryVTT Pathfinder 2e Creature JSONs
 
 To make use of the automatic rolling feature, a user can download a json of their player sheets from [Pathbuilder 2e](https://pathbuilder2e.com/) by clicking:
