@@ -5,6 +5,7 @@
 #include <map>
 #include <list>
 #include <iomanip>
+#include <cmath>
 #include "combatant.h" //delete??? may be redundant after refactoring
 #include "initialize.h"
 #include "rapidjson/document.h"
@@ -17,24 +18,25 @@ private:
     std::vector<Combatant> playerVec;
     std::vector<Combatant> enemyVec;
     std::map<std::string, std::vector<std::pair<std::string, int>>> conditions;
-    std::multimap<int, Combatant, std::greater<int>> combatants;
+    std::map<std::string, std::vector<std::pair<std::string, std::string>>> persistentDamage;
+    std::multimap<float, Combatant, std::greater<float>> combatants;
 
+    void searchInitForTie(float &roll, Combatant);
     void manualInitiative();
     void autoInitiative();
     void initStrParser(std::string combatantSelections);
     void roll(std::vector<Combatant> aVec);
     void initConditionMap();
+    void initPersistentMap();
     void setCondition();
+    void setPersistentDamage();
 
 public:
     combatTracker(std::vector<Combatant>, std::vector<Combatant>);
     void handleInitiative();
-
-    // void setPersistentTracker(multimap<int, Combatant> &combatants);
     void printConditions();
-    //  void printPDamage();
-    void printInitOrder(std::multimap<int, Combatant, std::greater<int>>::iterator currentTurn, std::multimap<int, Combatant, std::greater<int>> mapToPrint);
-    void beginInitiative(std::multimap<int, Combatant, std::greater<int>> combantants);
+    void printInitOrder(std::multimap<float, Combatant, std::greater<float>>::iterator currentTurn, std::multimap<float, Combatant, std::greater<float>> mapToPrint);
+    void beginInitiative();
 
     ~combatTracker();
 };

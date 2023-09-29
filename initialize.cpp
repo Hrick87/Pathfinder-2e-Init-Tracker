@@ -239,7 +239,8 @@ void initialize::readInPlayerJSON()
 
             // std::cout << charName << "'s lore is: " << skillMods[17] << std::endl;
 
-            Combatant newPlayer(charName, charHp, charAc, skillMods);
+            Combatant newPlayer(charName, charHp, charAc, skillMods, true);
+
             try
             {
                 playerVec.push_back(newPlayer);
@@ -351,7 +352,7 @@ void initialize::readInEnemyJSON()
             // IMPLEMENT ENEMY SKILL MODS
             std::map<std::string, int> skillMods = getEnemySkillMods(enemy);
 
-            Combatant newEnemy(enemyName, enemyHp, enemyAc, skillMods);
+            Combatant newEnemy(enemyName, enemyHp, enemyAc, skillMods, false);
 
             enemyVec.push_back(newEnemy);
         }

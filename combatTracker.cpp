@@ -17,7 +17,25 @@ combatTracker::combatTracker(std::vector<Combatant> playerVec, std::vector<Comba
     this->playerVec = playerVec;
     this->enemyVec = enemyVec;
     handleInitiative();
-    beginInitiative(combatants);
+    beginInitiative();
+}
+
+void combatTracker::searchInitForTie(float &roll, Combatant combatant)
+{
+    for (auto iter = combatants.begin(); iter != combatants.end(); iter++)
+    {
+        if (iter->first == roll)
+        {
+            if (iter->second.getIsPlayer() == false && combatant.getIsPlayer() == true)
+            {
+                roll -= 0.1;
+            }
+            else if (iter->second.getIsPlayer() == true && combatant.getIsPlayer() == false)
+            {
+                roll += 0.1;
+            }
+        }
+    }
 }
 
 void combatTracker::manualInitiative()
@@ -26,17 +44,19 @@ void combatTracker::manualInitiative()
 
     for (auto i = 0; i < playerVec.size(); i++)
     {
-        int initNum = 0;
+        float initNum = 0;
         std::cout << playerVec[i].getName() << ": ";
-        initNum = validateIntEntry(); // get input validated
+        initNum = validateIntEntry();            // get input validated
+        searchInitForTie(initNum, playerVec[i]); // Changes initiative in the case of a player monster tie
         combatants.insert({initNum, playerVec[i]});
     }
 
     for (auto i = 0; i < enemyVec.size(); i++)
     {
-        int initNum = 0;
+        float initNum = 0;
         std::cout << enemyVec[i].getName() << ": ";
-        initNum = validateIntEntry(); // get input validated
+        initNum = validateIntEntry();           // get input validated
+        searchInitForTie(initNum, enemyVec[i]); // Changes initiative in the case of a player monster tie
         combatants.insert({initNum, enemyVec[i]});
     }
 }
@@ -59,7 +79,7 @@ void combatTracker::roll(std::vector<Combatant> aVec)
 
         if (alreadyRolled == false)
         {
-            int roll = (rand() % 21);
+            float roll = (rand() % 21);
             int mod = aVec[x].getSkillMods().find("Perception")->second; // Rolls a D20 + skill mod
             int ogRoll = roll;
             roll += mod;
@@ -84,7 +104,8 @@ void combatTracker::roll(std::vector<Combatant> aVec)
                       << "perception modifier: " << mod;
             (extraMod != 0) ? std::cout << " + other bonuses: " << extraMod << " )" << std::endl : std::cout << " )" << std::endl;
             std::cout << std::endl;
-            combatants.insert(std::pair<int, Combatant>(roll, aVec[x]));
+            searchInitForTie(roll, aVec[x]); // Changes initiative in the case of a player monster tie
+            combatants.insert(std::pair<float, Combatant>(roll, aVec[x]));
         }
 
         // reset flag
@@ -199,7 +220,7 @@ void combatTracker::initStrParser(std::string combatantSelections)
         {
             std::advance(iter, skillIndex[x] + 1);
             int mod = iter->second;
-            int roll = (rand() % 21); // Rolls a D20
+            float roll = (rand() % 21); // Rolls a D20
 
             if (combatantIndex[x] < playerVec.size())
             {
@@ -224,7 +245,8 @@ void combatTracker::initStrParser(std::string combatantSelections)
                 std::cout << "Rolled a " << roll << " ( Dice roll: " << ogRoll << " + " << iter->first << " modifier: " << mod;
                 (extraMod != 0) ? std::cout << " + other modifiers: " << extraMod << " )" << std::endl : std::cout << " )" << std::endl;
                 std::cout << std::endl;
-                combatants.insert(std::pair<int, Combatant>(roll, playerVec[combatantIndex[x]]));
+                searchInitForTie(roll, playerVec[combatantIndex[x]]); // Changes initiative in the case of a player monster tie
+                combatants.insert(std::pair<float, Combatant>(roll, playerVec[combatantIndex[x]]));
             }
             else
             {
@@ -248,7 +270,8 @@ void combatTracker::initStrParser(std::string combatantSelections)
                 std::cout << "Rolled a " << roll << " ( Dice roll: " << ogRoll << " + " << iter->first << " modifier: " << mod;
                 (extraMod != 0) ? std::cout << " + other modifiers: " << extraMod << " )" << std::endl : std::cout << " )" << std::endl;
                 std::cout << std::endl;
-                combatants.insert(std::pair<int, Combatant>(roll, enemyVec[combatantIndex[x] - playerVec.size()]));
+                searchInitForTie(roll, enemyVec[combatantIndex[x] - playerVec.size()]); // Changes initiative in the case of a player monster tie
+                combatants.insert(std::pair<float, Combatant>(roll, enemyVec[combatantIndex[x] - playerVec.size()]));
             }
         }
         else
@@ -282,7 +305,7 @@ void combatTracker::handleInitiative()
     }
 }
 
-void combatTracker::printInitOrder(std::multimap<int, Combatant, std::greater<int>>::iterator currentTurn, std::multimap<int, Combatant, std::greater<int>> mapToPrint)
+void combatTracker::printInitOrder(std::multimap<float, Combatant, std::greater<float>>::iterator currentTurn, std::multimap<float, Combatant, std::greater<float>> mapToPrint)
 {
     std::cout << "Initiative Order\n\n";
 
@@ -302,7 +325,7 @@ void combatTracker::printInitOrder(std::multimap<int, Combatant, std::greater<in
     // Print initiative order
     for (auto itr = mapToPrint.begin(); itr != mapToPrint.end(); itr++)
     {
-        std::string conStr = itr->second.getName() + ": " + std::to_string(itr->first);
+        std::string conStr = itr->second.getName() + ": " + std::to_string((int)floor(itr->first));
         std::cout << conStr;
         if (currentTurn->second.getName() == itr->second.getName())
         {
@@ -329,56 +352,104 @@ void combatTracker::printConditions()
     std::cout << "Attitudes:\n36.Friendly\n37.Helpful\n38.Hostile\n39.Indifferent\n40.Unfriendly\n\n";
 }
 
-/*
-void combatTracker::printPDamage()
+void combatTracker::setPersistentDamage()
 {
-    std::cout << "Death and Dying:\n1.Doomed\n2.Dying\n3.Unconscious\n4.Wounded\n\n";
-    std::cout << "Degrees of Detection:\n5.Hidden\n6.Observed\n7.Undetected\n8.Unnoticed\n\n";
-    std::cout << "Lowered Abilities:\n9.Clumsy\n10.Drained\n11.Enfeebled\n12.Stupefied\n\n";
-    std::cout << "Senses:\n13.Blinded\n14.Concealed\n15.Dazzled\n16.Deafened\n17.Invisible\n\n";
-    std::cout << "Other:\n18.Confused\n19.Controlled\n20.Encumbered\n21.Fascinated\n22.Fatigued\n";
-    std::cout << "23.Flatfooted\n24.Fleeing\n25.Frightened\n26.Grabbed\n27.Immobilized\n28.Paralyzed\n";
-    std::cout << "29.Petrified\n30.Prone\n31.Quickened\n32.Restrained\n33.Sickened\n34.Slowed\n";
-    std::cout << "35.Stunned\n\n";
-    std::cout << "Attitudes:\n36.Friendly\n37.Helpful\n38.Hostile\n39.Indifferent\n40.Unfriendly\n\n";
-}
-*/
-
-/*
-void combatTracker::setPersistentTracker(multimap<int, Combatant> &combatants)
-{
-    std::cout << "Select combatant to add persistent damage to.\n\n";
-    int count = 0;
-    int selection = 0;
-    map<int, Combatant> selected;
-
-    for (multimap<int, Combatant>::iterator itr = combatants.begin(); itr != combatants.end(); ++itr)
+    std::cout << "Type the numbers of the combatant to add to, modify or remove persistent damage from in the format: 1 4 2.\n\n";
+    int count = 1;
+    std::string selectionStr = "0";
+    for (std::multimap<float, Combatant, std::greater<float>>::iterator itr = combatants.begin(); itr != combatants.end(); ++itr)
     {
-        std::cout << count << ": " << itr->getName() << endl;
-        selected.insert({count, *itr});
+        std::cout << count << ". " << itr->second.getName() << std::endl;
         count++;
     }
 
-    cin >> selection;
-    Combatant *chosen = &(selected.at(selection));
-    std::cout << "Pick a persistent damage(s) to apply\n\n";
+    std::cin.ignore();
+    std::getline(std::cin, selectionStr);
 
-    printPDamage();
+    std::istringstream iss(selectionStr);
 
-    chosen->setCondition();
-    string chosenName = chosen->getName();
+    int selection = 0;
+    std::vector<int> combatantNums;
 
-    for (std::multimap<int, Combatant, std::greater<int>>::iterator itr = combatants.begin(); itr != combatants.end(); ++itr)
+    while (iss >> selection)
     {
-        if (chosenName == (itr->getName()))
+        std::cout << selection << std::endl;
+        combatantNums.push_back(selection);
+    }
+
+    for (auto iter = combatantNums.begin(); iter != combatantNums.end(); iter++)
+    {
+        auto iter2 = combatants.begin();
+        std::advance(iter2, *iter - 1);
+
+        std::cout << "Type the type of damage followed by its value or associated dice roll in the format: fire 2 bleed 2d4\n";
+        std::cout << "Multiple entries at once are allowed. If an entry already exists you will be prompted to either modify the value or remove it.\n";
+        std::string persistentDamageEntry = "";
+        // std::cin.ignore();
+        std::getline(std::cin, persistentDamageEntry);
+
+        std::istringstream ss(persistentDamageEntry);
+        std::string persistentDamageContainer = "";
+        bool firstLoop = true;
+        std::string persistentDamageName = " ";
+        std::string persistentDamageValue = " ";
+        bool persistentDamageExists = false;
+
+        while (ss >> persistentDamageContainer)
         {
-            std::multimap<int, Combatant, std::greater<int>>::iterator it1 = combatants.erase(itr);
-            combatants.insert(it1, *chosen);
-            break;
+            if (firstLoop) // first loop grabs name of persistent damage
+            {
+                firstLoop = false;
+                persistentDamageName = persistentDamageContainer;
+            }
+            else // second loop grabs value of persistent damage then begins insert check
+            {
+                firstLoop = true;
+                persistentDamageValue = persistentDamageContainer;
+
+                std::vector<std::pair<std::string, std::string>> vecToCheck = persistentDamage[iter2->second.getName()];
+                int posOfDamage = 0;
+
+                for (auto i = vecToCheck.begin(); i != vecToCheck.end(); i++)
+                {
+                    if (i->first == persistentDamageName)
+                    {
+                        persistentDamageExists = true;
+                        break;
+                    }
+                    posOfDamage++;
+                }
+
+                if (persistentDamageExists)
+                {
+                    std::cout << persistentDamageName << " damage already exists on this combatant.\nWould you like to\n1. remove\n2. change value of damage\n";
+                    while (1)
+                    {
+                        int whichOption = validateIntEntry();
+                        if (whichOption == 1)
+                        {
+                            persistentDamage[iter2->second.getName()].erase(persistentDamage[iter2->second.getName()].begin() + posOfDamage);
+                            break;
+                        }
+                        else if (whichOption == 2)
+                        {
+                            persistentDamage[iter2->second.getName()][posOfDamage].second = persistentDamageValue;
+                            break;
+                        }
+                        else
+                        {
+                            std::cerr << "Please enter a valid number.\n";
+                        }
+                    }
+                }
+                else
+                {
+                    persistentDamage[iter2->second.getName()].push_back({persistentDamageName, persistentDamageValue});
+                }
+            }
         }
     }
 }
-*/
 
 template <typename First, typename... T>
 bool is_in(First &&first, T &&...t)
@@ -388,11 +459,11 @@ bool is_in(First &&first, T &&...t)
 
 void combatTracker::setCondition()
 {
-    std::cout << "Type numbers of the combatants to add conditions to in the format: 2 1 4.\n\n";
+    std::cout << "Type numbers of the combatants to update conditions of in the format: 2 1 4.\n\n";
     int count = 1;
     std::string selectionStr = "0";
 
-    for (std::multimap<int, Combatant, std::greater<int>>::iterator itr = combatants.begin(); itr != combatants.end(); ++itr)
+    for (std::multimap<float, Combatant, std::greater<float>>::iterator itr = combatants.begin(); itr != combatants.end(); ++itr)
     {
         std::cout << count << ". " << itr->second.getName() << std::endl;
         count++;
@@ -400,17 +471,15 @@ void combatTracker::setCondition()
 
     std::cin.ignore();
     std::getline(std::cin, selectionStr);
+
     std::istringstream iss(selectionStr);
+
     int selection = 0;
     std::vector<int> combatantNums;
+
     while (iss >> selection)
     {
         combatantNums.push_back(selection);
-    }
-
-    for (auto i = combatantNums.begin(); i != combatantNums.end(); i++)
-    {
-        std::cout << *i << std::endl;
     }
 
     printConditions();
@@ -423,7 +492,7 @@ void combatTracker::setCondition()
     {
         auto iter2 = combatants.begin();
         std::advance(iter2, *iter - 1);
-        std::cout << "Type the numbers of the conditions to add to " << iter2->second.getName() << " in the format: 1 2 7 4" << std::endl;
+        std::cout << "Type the numbers of the conditions to modify " << iter2->second.getName() << " in the format: 1 2 7 4" << std::endl;
 
         if (setValue)
         {
@@ -437,27 +506,88 @@ void combatTracker::setCondition()
         std::istringstream ss(addCondStr);
         int addCond = 0;
         int condVal = 0;
+        bool conditionExists = false;
 
         while (ss >> addCond)
         {
-            if (is_in(addCond, 1, 2, 4, 9, 10, 11, 12, 22, 25, 33, 34, 35))
+            std::vector<std::pair<std::string, int>> vecToCheck = conditions[iter2->second.getName()];
+            int posOfCond = 0;
+
+            for (auto i = vecToCheck.begin(); i != vecToCheck.end(); i++)
             {
-                setValue = true;
-                std::cout << "Set value of condition." << std::endl;
-                condVal = validateIntEntry();
-                // INSERT CONDITION HERE WITH VALUE INPUTTED
-                conditions[iter2->second.getName()].push_back({conditionArr[addCond - 1], condVal});
+                if (i->first == conditionArr[addCond - 1])
+                {
+
+                    conditionExists = true;
+                    break;
+                }
+                posOfCond++;
             }
-            else if (addCond < 41)
+
+            if (!conditionExists)
             {
-                // INSERT CONDITION HERE WITH VALUE 0
-                conditions[iter2->second.getName()].push_back({conditionArr[addCond - 1], -1});
+                if (is_in(addCond, 1, 2, 4, 9, 10, 11, 12, 22, 25, 33, 34, 35))
+                {
+                    setValue = true;
+                    std::cout << "Set value of " << conditionArr[addCond - 1] << std::endl;
+                    condVal = validateIntEntry();
+                    // INSERT CONDITION HERE WITH VALUE INPUTTED
+                    conditions[iter2->second.getName()].push_back({conditionArr[addCond - 1], condVal});
+                }
+                else if (addCond < 41)
+                {
+                    // INSERT CONDITION HERE WITH VALUE -1
+                    conditions[iter2->second.getName()].push_back({conditionArr[addCond - 1], -1});
+                }
+                else
+                {
+                    std::cout << "Please pick a valid number";
+                }
             }
             else
             {
-                std::cout << "Please pick a valid number";
+                conditionExists = false;
+                std::cout << conditionArr[addCond - 1] << " already exists, would you like to\n1. Cancel\n2. Remove the condition\n";
+                if (is_in(addCond, 1, 2, 4, 9, 10, 11, 12, 22, 25, 33, 34, 35))
+                {
+                    std::cout << "3. Change the conditions value\n";
+                }
+
+                while (1)
+                {
+                    int conditionExistsEntry = validateIntEntry();
+                    if (conditionExistsEntry == 1)
+                    {
+                        break;
+                    }
+                    else if (conditionExistsEntry == 2)
+                    {
+                        conditions[iter2->second.getName()].erase(conditions[iter2->second.getName()].begin() + posOfCond);
+                        break;
+                    }
+                    else if (conditionExistsEntry == 3)
+                    {
+                        std::cout << "New value of " << conditionArr[addCond - 1] << ": ";
+                        int newVal = validateIntEntry();
+                        conditions[iter2->second.getName()].at(posOfCond).second = newVal;
+                        break;
+                    }
+                    else
+                    {
+                        std::cerr << "Please enter a valid number choice\n";
+                    }
+                }
             }
         }
+    }
+}
+
+void combatTracker::initPersistentMap()
+{
+    for (auto iter = combatants.begin(); iter != combatants.end(); iter++)
+    {
+        std::vector<std::pair<std::string, std::string>> tempVec;
+        persistentDamage.insert({iter->second.getName(), tempVec});
     }
 }
 
@@ -470,11 +600,11 @@ void combatTracker::initConditionMap()
     }
 }
 
-void combatTracker::beginInitiative(std::multimap<int, Combatant, std::greater<int>> combatants)
+void combatTracker::beginInitiative()
 {
 
     char userInput = ' ';
-    bool startOfTurn = true;
+    // bool startOfTurn = true;
 
     initConditionMap(); // fill condition map with names of players in the initative
 
@@ -485,11 +615,11 @@ void combatTracker::beginInitiative(std::multimap<int, Combatant, std::greater<i
         // TURNS
         for (auto itr = combatants.begin(); itr != combatants.end();)
         {
-            startOfTurn = true;
-            // UPDATE STUNNED AT BEGINNING OF TURN
-            // itr->updateConditions(startOfTurn);
+            // startOfTurn = true;
+            //  UPDATE STUNNED AT BEGINNING OF TURN
+            //  itr->updateConditions(startOfTurn);
 
-            std::cout << "\033[2J\033[1;1H"; // clears screen with escape sequences
+            // std::cout << "\033[2J\033[1;1H"; // clears screen with escape sequences
 
             std::cout << "ROUND " << z << "\n\n";
 
@@ -512,16 +642,23 @@ void combatTracker::beginInitiative(std::multimap<int, Combatant, std::greater<i
                     }
                 }
             }
+            std::cout << std::endl;
+            std::cout << "Persistent Damage: ";
+            for (int x = 0; x < persistentDamage[itr->second.getName()].size(); x++)
+            {
+                std::cout << persistentDamage[itr->second.getName()][x].first;
+
+                std::cout << " " << persistentDamage[itr->second.getName()][x].second;
+                if (x < persistentDamage[itr->second.getName()].size() - 1)
+                {
+                    std::cout << ", ";
+                }
+            }
             std::cout << std::endl
                       << std::endl;
 
             std::cout << "n for next turn, p for previous turn, x to change current combatants initiative (Delay)\n";
-            std::cout << "c to add a condition to a combatant\n";
-
-            /*
-            std::cout << "p to add persistent damage,\n";
-            std::cout << "r to remove condition or persistent damage,\n";
-            std::cout << "v to change value of condition or persistent damage\n\n";*/
+            std::cout << "c to add, modify, or remove a condition on a combatant, and d to add, modify, or remove persistent damage on a combatant\n";
 
             while (1)
             {
@@ -557,7 +694,7 @@ void combatTracker::beginInitiative(std::multimap<int, Combatant, std::greater<i
                     int newInitiative = validateIntEntry();
                     Combatant tempCombatant = itr->second;
                     itr = combatants.erase(itr);
-                    combatants.insert(std::pair<int, Combatant>(newInitiative, tempCombatant));
+                    combatants.insert(std::pair<float, Combatant>(newInitiative, tempCombatant));
 
                     break;
                 }
@@ -565,38 +702,22 @@ void combatTracker::beginInitiative(std::multimap<int, Combatant, std::greater<i
                 {
                     setCondition();
                     itr--; // stay on current player, do not go to next in the initative
+                    z--;   // stay on current round
                     break;
                 }
-                else if (userInput == 'z')
+                else if (userInput == 'd')
                 {
-                    // setPersistentTracker(combatants);
-                    //  PREVIOUS COMBATANT
-                    for (std::multimap<int, Combatant, std::greater<int>>::iterator itr2 = combatants.begin(); itr2 != itr; ++itr2)
-                    {
-                        // itr2->second.printCombatantInfo();
-                    }
-                    // CURRENT COMBATANT
-                    std::cout << "Current Turn\n\n";
-                    // itr->second.printCombatantInfo();
-                    std::cout << "n to end turn, c to add a condition to a combatant,\n";
-                    std::cout << "p to add persistent damage,\n";
-                    std::cout << "r to remove condition or persistent damage,\n";
-                    std::cout << "v to change value of condition or persistent damage\n\n";
-                }
-                else if (userInput == 'r')
-                {
-                    std::cout << "UNIMPLEMENTED\n";
-                }
-                else if (userInput == 'v')
-                {
-                    std::cout << "UNIMPLEMENTED\n";
+                    setPersistentDamage();
+                    itr--; // stay on current player, do not go to next in the initative
+                    z--;   // stay on current round
+                    break;
                 }
                 else
                 {
                     std::cerr << "Invalid command\n";
                 }
             }
-            startOfTurn = false;
+            // startOfTurn = false;
 
             // UPDATE FRIGHTENED AT END OF TURN
             // itr->updateConditions(startOfTurn);

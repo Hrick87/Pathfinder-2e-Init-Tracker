@@ -1,3 +1,14 @@
+## 1.0.0
+
+### System Improvements
+-   Added rudimentary persistent damage tracker
+-   Allowed for the altering and removal of conditions and persistent damage
+
+### Bug Fixes
+
+-   Fixed bug that incremented the round counter when conditions or persistent damage was modified, removed, or applied
+-   Enemy combatants go before players now on a tied initiative roll as per the Pathfinder Second Edition rules
+
 ## 0.9.0
 
 ### System Improvements

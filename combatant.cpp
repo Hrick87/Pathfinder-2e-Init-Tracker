@@ -11,14 +11,36 @@ Combatant::Combatant()
     std::cout << "AC: ";
     this->ac = validateIntEntry();
     std::cout << std::endl;
+
+    while (1)
+    {
+        std::cout << "Is this a player? y/n\n";
+        char yesOrNo = ' ';
+        std::cin >> yesOrNo;
+        if (tolower(yesOrNo) == 'y')
+        {
+            this->isPlayer = true;
+            break;
+        }
+        else if (tolower(yesOrNo) == 'n')
+        {
+            this->isPlayer = false;
+            break;
+        }
+        else
+        {
+            std::cerr << "Please enter a vlid entry\n";
+        }
+    }
 }
 
-Combatant::Combatant(std::string name, int hp, int ac, std::map<std::string, int> skillMods)
+Combatant::Combatant(std::string name, int hp, int ac, std::map<std::string, int> skillMods, bool isPlayer)
 {
     this->name = name;
     this->hp = hp;
     this->ac = ac;
     this->skillMods = skillMods;
+    this->isPlayer = isPlayer;
 }
 
 std::string Combatant::getName()
